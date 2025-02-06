@@ -12,30 +12,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (url.includes('watchlist')) {
                         // Handle sector watchlists
                         const sectorWatchlists = data.watchlist[0].sector_watchlists;
-                        Object.entries(sectorWatchlists).forEach(([sector, stocks]) => {
+                        const prices = data.watchlist[0].prices || {};
+                        
+                        // Sort sectors alphabetically
+                        const sortedSectors = Object.entries(sectorWatchlists).sort(([a], [b]) => a.localeCompare(b));
+                        
+                        sortedSectors.forEach(([sector, stocks]) => {
                             const sectorDiv = document.createElement('div');
                             sectorDiv.className = 'sector-group';
                             sectorDiv.innerHTML = `
                                 <h3 class="sector-title">${sector}</h3>
                                 <div class="sector-stocks">
-                                    ${stocks.map(symbol => `
-                                        <div class="stock-item">
-                                            <span class="symbol">${symbol}</span>
-                                            <div class="price flip-board" id="price-${symbol}"></div>
-                                            <div class="change flip-board" id="change-${symbol}"></div>
-                                        </div>
-                                    `).join('')}
+                                    ${stocks.map(symbol => {
+                                        const stockPrice = prices[symbol] || {};
+                                        const price = stockPrice.price ? stockPrice.price.toFixed(2) : 'N/A';
+                                        const change = stockPrice.changePercent ? stockPrice.changePercent.toFixed(2) : '0.00';
+                                        const isPositive = stockPrice.change >= 0;
+                                        const isMarketClosed = stockPrice.isMarketClosed;
+                                        
+                                        return `
+                                            <div class="stock-item">
+                                                <span class="symbol">${symbol}</span>
+                                                <div class="price flip-board ${isPositive ? 'positive' : 'negative'}">
+                                                    ${price.split('').map(digit => 
+                                                        `<span class="digit">${digit}</span>`
+                                                    ).join('')}
+                                                </div>
+                                                <div class="change flip-board ${isPositive ? 'positive' : 'negative'}">
+                                                    ${(isPositive ? '+' : '') + change + '%'}
+                                                </div>
+                                                ${isMarketClosed ? '<span class="market-status">Market Closed</span>' : ''}
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
                             `;
                             element.appendChild(sectorDiv);
-                            
-                            // Add mock prices for each stock
-                            stocks.forEach(symbol => {
-                                const mockPrice = (Math.random() * 1000).toFixed(2);
-                                const mockChange = (Math.random() * 10 - 5).toFixed(2);
-                                updateFlipBoard(`price-${symbol}`, mockPrice);
-                                updateFlipBoard(`change-${symbol}`, mockChange, parseFloat(mockChange) >= 0);
-                            });
                         });
                     } else if (url.includes('trades')) {
                         // Handle trades display (compact version)
@@ -59,29 +71,61 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (displayType === 'flip-board') {
                     if (url.includes('summary')) {
                         const summary = data.summary;
-                        // Display portfolio holdings
+                        const portfolioDetails = summary.portfolio_details || {};
+                        
                         const portfolioDiv = document.createElement('div');
                         portfolioDiv.className = 'portfolio-summary';
+                        
                         portfolioDiv.innerHTML = `
-                            <div class="balance-display">
-                                <h4>Balance</h4>
-                                <div class="flip-board" id="balance-board">
-                                    ${summary.balance.toFixed(2)}
+                            <div class="summary-header">
+                                <div class="summary-total">
+                                    <h3>Portfolio Value</h3>
+                                    <div class="flip-board value">
+                                        $${summary.total_portfolio_value.toFixed(2)}
+                                    </div>
+                                </div>
+                                <div class="summary-pl">
+                                    <h3>Total P/L</h3>
+                                    <div class="flip-board ${summary.total_unrealized_pl >= 0 ? 'positive' : 'negative'}">
+                                        ${summary.total_unrealized_pl >= 0 ? '+' : ''}$${summary.total_unrealized_pl.toFixed(2)}
+                                        (${summary.total_pl_percentage.toFixed(2)}%)
+                                    </div>
                                 </div>
                             </div>
-                            <div class="holdings-list">
-                                <h4>Current Holdings</h4>
-                                ${Object.entries(summary.portfolio).map(([symbol, shares]) => `
-                                    <div class="holding-item">
-                                        <span class="holding-symbol">${symbol}</span>
-                                        <span class="holding-shares">${shares}</span>
-                                    </div>
-                                `).join('')}
+                            <div class="holdings-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Shares</th>
+                                            <th>Buy Price</th>
+                                            <th>Current</th>
+                                            <th>Total Value</th>
+                                            <th>P/L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${Object.entries(portfolioDetails).map(([symbol, details]) => `
+                                            <tr>
+                                                <td class="symbol">${symbol}</td>
+                                                <td class="shares">${details.shares}</td>
+                                                <td class="price">$${details.purchase_price.toFixed(2)}</td>
+                                                <td class="price">$${details.current_price.toFixed(2)}</td>
+                                                <td class="value">$${details.current_value.toFixed(2)}</td>
+                                                <td class="pl ${details.unrealized_pl >= 0 ? 'positive' : 'negative'}">
+                                                    ${details.unrealized_pl >= 0 ? '+' : ''}$${details.unrealized_pl.toFixed(2)}
+                                                    <span class="pl-percent">
+                                                        (${details.pl_percentage.toFixed(2)}%)
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
                             </div>
                         `;
                         element.innerHTML = '';
                         element.appendChild(portfolioDiv);
-                        updateFlipBoard('balance-board', summary.balance.toFixed(2));
                     }
                 }
             })
