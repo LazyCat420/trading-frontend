@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Trading Bot Dashboard</h1>
+        </header>
+
+        <main>
+            <section id="watchlist" class="data-section">
+                <h2>Watchlist</h2>
+                <div class="data-display" id="watchlist-display">
+                    <!-- Watchlist data will be loaded here -->
+                    <div class="watchlist-item">
+                        <h3>Stock: AAPL</h3>
+                        <div class="price flip-board">
+                            <span class="digit">1</span>
+                            <span class="digit">7</span>
+                            <span class="digit">5</span>
+                            <span class="digit">.</span>
+                            <span class="digit">2</span>
+                            <span class="digit">5</span>
+                        </div>
+                        <div class="change flip-board positive">
+                            <span class="digit">+</span>
+                            <span class="digit">1</span>
+                            <span class="digit">.</span>
+                            <span class="digit">5</span>
+                            <span class="digit">0</span>
+                            <span class="digit">%</span>
+                        </div>
+                    </div>
+                    <div class="watchlist-item">
+                        <h3>Stock: GOOG</h3>
+                        <div class="price flip-board">
+                            <span class="digit">2</span>
+                            <span class="digit">5</span>
+                            <span class="digit">0</span>
+                            <span class="digit">0</span>
+                            <span class="digit">.</span>
+                            <span class="digit">7</span>
+                            <span class="digit">5</span>
+                        </div>
+                        <div class="change flip-board negative">
+                            <span class="digit">-</span>
+                            <span class="digit">0</span>
+                            <span class="digit">.</span>
+                            <span class="digit">2</span>
+                            <span class="digit">5</span>
+                            <span class="digit">%</span>
+                        </div>
+                    </div>
+                    <!-- More watchlist items will be dynamically added here -->
+                </div>
+            </section>
+
+            <section id="trades" class="data-section">
+                <h2>Trade History</h2>
+                <div class="data-display" id="trades-display">
+                    <!-- Trade history data will be loaded here -->
+                    <p>Loading trade history...</p>
+                </div>
+            </section>
+
+            <section id="bot-settings" class="data-section">
+                <h2>Bot Settings</h2>
+                <div class="settings-panel" id="settings-display">
+                    <!-- Bot settings controls will be here -->
+                    <div class="flip-board-setting" id="trading-mode-display">
+                        <h3>Trading Mode</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                    <div class="flip-board-setting" id="risk-level-display">
+                        <h3>Risk Level</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                    <div class="flip-board-setting" id="strategy-display">
+                        <h3>Strategy</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="bot-summary" class="data-section">
+                <h2>Bot Summary</h2>
+                <div class="summary-display" id="summary-display">
+                    <!-- Bot summary data will be loaded here -->
+                    <div class="flip-board-summary" id="current-capital-display">
+                        <h3>Current Capital</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                    <div class="flip-board-summary" id="total-trades-display">
+                        <h3>Total Trades</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                    <div class="flip-board-summary" id="profit-loss-display">
+                        <h3>Profit/Loss</h3>
+                        <div class="value">Loading...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Trading Bot UI</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

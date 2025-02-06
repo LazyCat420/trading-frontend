@@ -1,0 +1,333 @@
+body {
+    font-family: 'Helvetica Neue', sans-serif; /* Modern, clean font */
+    background-color: #f0e68c; /* Light parchment background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333; /* Dark gray text for better readability */
+}
+
+.dashboard-container {
+    background-color: #e8e0d4; /* Lighter leather-like container background */
+    border: 3px solid #b8860b; /* Gold border for a touch of sophistication */
+    border-radius: 12px;
+    box-shadow: 8px 8px 15px rgba(0,0,0,0.2); /* Softer shadow */
+    padding: 30px; /* Increased padding */
+    width: 95%; /* Wider container */
+    max-width: 1400px;
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+header {
+    background-color: #c09551; /* Muted gold header */
+    color: white;
+    text-align: center;
+    padding: 20px 0; /* Increased padding */
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 30px; /* Increased margin */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); /* Refined shadow */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Text shadow for depth */
+}
+
+header h1 {
+    font-size: 2.5em; /* Larger title */
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+main {
+    display: grid; /* Using grid for better layout control */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+    gap: 30px; /* Increased gap */
+    padding: 20px;
+}
+
+.data-section {
+    background-color: #f8f8ff;
+    border: 1px solid #d3d3d3;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-height: 300px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.data-section:hover {
+    transform: scale(1.02); /* Slight scale up on hover */
+}
+
+.data-section h2 {
+    color: #556b2f; /* Olive green heading */
+    border-bottom: 2px solid #b8860b; /* Gold border */
+    padding-bottom: 12px; /* Increased padding */
+    margin-bottom: 15px; /* Increased margin */
+    font-size: 1.8em;
+    font-weight: bold;
+    text-transform: capitalize; /* Capitalize headings */
+}
+
+.data-display, .settings-panel, .summary-display {
+    background-color: #fff; /* White data area */
+    border: 1px solid #e0e0e0; /* Very light gray border */
+    border-radius: 8px;
+    padding: 15px; /* Increased padding */
+    font-family: 'Menlo', monospace; /* Sleek monospace font */
+    white-space: pre-wrap;
+    overflow-x: auto;
+    box-shadow: inset 1px 1px 2px #f0f0f0; /* Very subtle inner shadow */
+    font-size: 0.95em; /* Slightly larger font size */
+    line-height: 1.4; /* Improved line height for readability */
+    /* Remove default monospace styling for data display */
+    font-family: sans-serif;
+    white-space: normal;
+}
+
+footer {
+    background-color: #c09551; /* Muted gold footer */
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    border-radius: 0 0 10px 10px;
+    margin-top: 30px; /* Increased margin */
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.3); /* Refined shadow */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Text shadow for depth */
+}
+
+/* Style for flip board settings and summary */
+.flip-board-setting, .flip-board-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.flip-board-setting h3, .flip-board-summary h3 {
+    font-size: 1.2em;
+    color: #556b2f;
+    margin-bottom: 5px;
+}
+
+.flip-board-setting .value, .flip-board-summary .value {
+    background-color: #333; /* Dark background for digits */
+    color: #f0e68c; /* Light yellow digits for contrast */
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace; /* Monospace font for digits */
+    font-size: 1.5em;
+    letter-spacing: 0.1em;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5); /* Shadow for depth */
+    text-align: center; /* Center align digits */
+    min-width: 100px; /* Minimum width for value display */
+}
+
+/* Style for Watchlist and Trades - keeping list format for now, can be further customized */
+.data-display ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.data-display li {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-bottom: 1px dashed #d3d3d3;
+}
+
+.data-display li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Style for settings and summary data (key-value pairs) */
+.settings-panel, .summary-display {
+    font-size: 1em;
+}
+
+.settings-panel::before, .summary-display::before {
+    content: '';
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-panel > p, .summary-display > p {
+    margin: 5px 0;
+}
+
+/* General flip board styles */
+.flip-board {
+    display: inline-flex;
+    gap: 1px;
+    padding: 4px;
+    background: #2c3e50;
+    border-radius: 3px;
+    margin: 2px 0;
+}
+
+.flip-board .digit {
+    background: #fff;
+    color: #2c3e50;
+    padding: 2px 4px;
+    font-size: 0.9em;
+    min-width: 12px;
+    text-align: center;
+}
+
+.flip-board.positive .digit {
+    background-color: #006400; /* Dark green for positive change */
+    color: #90ee90; /* Light green digits */
+}
+
+.flip-board.negative .digit {
+    background-color: #8b0000; /* Dark red for negative change */
+    color: #ffa07a; /* Light red digits */
+}
+
+/* Watchlist specific styles */
+.watchlist-item {
+    background-color: #f8f8ff; /* Very light gray item background */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.watchlist-item h3 {
+    font-size: 1.3em;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #2f4f4f; /* Dark slate gray stock name */
+}
+
+.watchlist-item .price, .watchlist-item .change {
+    margin-bottom: 8px;
+}
+
+.watchlist-item .change {
+    font-size: 1.1em;
+}
+
+/* Add these styles to your existing CSS */
+.trade-item {
+    background: #fff;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.trade-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.trade-symbol {
+    font-weight: bold;
+}
+
+.trade-action {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+.trade-action.BUY {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trade-action.SELL {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.trade-details {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+}
+
+/* New styles for sector watchlists */
+.sector-group {
+    background: #fff;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.sector-title {
+    font-size: 0.9em;
+    color: #666;
+    margin: 0 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
+}
+
+.sector-stocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+}
+
+.stock-item {
+    background: #f8f9fa;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.stock-item .symbol {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Portfolio summary styles */
+.portfolio-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.balance-display {
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.holdings-list {
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.holding-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+} 

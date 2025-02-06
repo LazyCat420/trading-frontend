@@ -1,0 +1,120 @@
+WE NEED TO BUILD A FRONT END BASED ON THE MONGODB 
+
+Backend Trading Bot Rules:
+
+Give the bot $100,000 starting capital. 
+
+# Database Management:
+3. Data Pipeline:
+   - Data Storage: MongoDB (`trading` database)
+   - Collections in `trading` database:
+        - `analysis`
+        - `news`
+        - `portfolio`
+        - `research`
+        - `scraped_content`
+        - `summary`
+        - `thought_chains`
+        - `thought_graphs`
+        - `thought_trees`
+        - `trades`
+        - `trading_decisions`
+        - `trends`
+        - `watchlist`
+   - Searching via Searxng and save the results with the website url to MongoDB. 
+   - Saving Researching and Anaylzing data to MongoDB
+   - Letting the LLM access the data in MongoDB to pick urls for Puppeteer to scrape the data from the web. 
+   - Allow the LLM to add stocks from the search and news to the watchlist which will be saved in MongoDB
+   - LLM will also be able to execute trades and save to the client trading database trades in MongoDB
+   - LLM will be able to access the watchlist in MongoDB to make trading decisions 
+
+# LLM Pipeline 
+4. LLM Pipeline:
+  - Use Searxng to search for news and stock market data for watchlist stocks and feed it to the LLM 
+  - LLM will use the Researching and Anaylzing data to make trading decisions including adding to the watchlist and researching more stocks. 
+  - LLM will then use the updated watchlist to make trading decisions and execute trades. 
+
+# Trading Bot Pipeline
+  - Search general news and stock market data for the LLM to make decisions on what stocks to search more information about. 
+  - If the LLM likes the stock it will add it to the watchlist. 
+  - Then the LLM will research the stocks on the watchlist and make trading decisions based on the research. 
+
+# Trading Automation Turn Bot Back On 
+  - Have the bot turn on between market hours of 9:00am and 4:00pm eastern time. 
+  - Have the bot idle when the market is closed. 
+  - Have bot turn on when stock hits price target set by the LLM. 
+
+
+
+Tools being used 
+MongoDB
+Searxng
+Ollama
+Python
+Puppeteer
+
+# Frontend UI Plan for Trading Bot Data (stock market dashboard that is Skeumorphic and looks like a analog flip board.)
+
+This plan outlines the steps to build a skeuomorphic frontend UI to visualize trading bot data from MongoDB.
+
+**1. Choose Frontend Technology:**
+
+For a skeuomorphic design, focusing on detailed visual elements, HTML, CSS, and JavaScript are fundamental.  You can use a library to help structure your JavaScript code, but for skeuomorphism, direct control over the DOM and CSS styling is often beneficial.
+
+*   **HTML:** Structure the UI elements to represent different aspects of your trading bot data (e.g., watchlist, trade history, bot settings). Think of visual metaphors for each data section (like a ledger for trades, a dashboard for settings, etc.).
+*   **CSS:**  This is crucial for skeuomorphism. Use CSS to create realistic textures, shadows, gradients, and 3D effects. Think about materials like leather, wood, metal, and paper that are common in skeuomorphic designs.  You can use CSS frameworks for basic layout, but you'll likely need to write custom CSS for the skeuomorphic styling.
+*   **JavaScript:**  Use JavaScript to fetch data from your backend API (see step 2), dynamically update the UI, and handle any user interactions.
+
+**2. Backend API for Data Retrieval:**
+
+You'll need a backend API to serve data from your MongoDB database to the frontend.  Since you're already using Python and MongoDB, a Python backend framework is a good choice.
+
+*   **Framework:**  Use Flask or FastAPI. FastAPI is generally faster and more modern, but Flask is simpler to get started with.
+*   **API Endpoints:** Create API endpoints to retrieve different data sets from MongoDB:
+    *   `/watchlist`:  Returns the watchlist data.
+    *   `/trades`: Returns trade history data.
+    *   `/bot_settings`: Returns bot configuration settings.
+    *   You can create more specific endpoints as needed.
+*   **Data Format:**  Send data from the API as JSON.
+
+**3. Skeuomorphic Design Elements:**
+
+*   **Visual Metaphors:**  Think about real-world objects that represent the data. For example:
+    *   Watchlist:  A physical notepad or a ticker tape.
+    *   Trade History: A ledger or a stack of cards.
+    *   Bot Settings:  Dials, switches, or a control panel.
+*   **Textures and Materials:** Use CSS to simulate textures like:
+    *   Leather backgrounds for sections.
+    *   Wooden frames or dividers.
+    *   Metal accents for buttons or controls.
+    *   Paper or parchment backgrounds for text areas.
+*   **Shadows and Gradients:**  Use subtle shadows and gradients to create depth and make elements appear 3D.  Inner shadows and highlights are key for skeuomorphism.
+*   **Typography:** Choose fonts that fit the skeuomorphic style.  Consider fonts that look like they could be from older typewriters or printed documents.
+*   **Icons:**  Use icons that are also skeuomorphic, resembling real-world objects rather than flat, modern icons.
+
+**4. Data Display and UI Structure:**
+
+*   **Dashboard Layout:** Organize the UI into sections, each representing a data category (watchlist, trades, settings).
+*   **Watchlist Display:**  Present the watchlist stocks in a visually appealing way, perhaps like items on a physical list or ticker.  Consider displaying key data points like current price, change, etc., in a skeuomorphic style.
+*   **Trade History Display:**  Show trades in a ledger-like format, with columns for date, stock, quantity, price, etc.  Use visual cues to differentiate between buy and sell orders.
+*   **Bot Settings UI:**  Design controls that look like physical knobs, switches, or sliders to adjust bot parameters.
+
+**5. Technology Stack Summary:**
+
+*   **Frontend:** HTML, CSS, JavaScript (potentially with a library for structure, but not a heavy framework for skeuomorphism).
+*   **Backend:** Python (Flask or FastAPI) for API, PyMongo to interact with MongoDB.
+*   **Database:** MongoDB (already in use).
+
+**Next Steps:**
+
+1.  **Set up your backend API** using Flask or FastAPI to serve data from MongoDB.
+2.  **Start building the HTML structure** for your frontend, thinking about the different sections and visual metaphors.
+3.  **Begin styling with CSS**, focusing on skeuomorphic elements, textures, shadows, and gradients.
+4.  **Use JavaScript to fetch data** from your API and dynamically populate the HTML elements.
+5.  **Iterate and refine** the design and functionality as you build.
+
+This plan provides a starting point.  Focus on the visual design and how to represent your trading bot data in a skeuomorphic and user-friendly way. Remember to break down the UI into smaller components and build them step-by-step.
+
+
+
+
