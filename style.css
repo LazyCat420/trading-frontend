@@ -431,7 +431,7 @@ footer {
 /* Updated Bot Summary styles */
 .holdings-table {
     margin-top: 20px;
-    overflow-x: auto;
+    width: 100%;
 }
 
 .holdings-table table {
@@ -439,50 +439,56 @@ footer {
     border-collapse: collapse;
     background: white;
     border-radius: 8px;
-    overflow: hidden;
+    font-size: 0.9em; /* Slightly reduce font size */
+    table-layout: fixed; /* Force equal column widths */
 }
 
 .holdings-table th,
 .holdings-table td {
-    padding: 12px;
+    padding: 8px 4px; /* Reduce horizontal padding */
     text-align: right;
     border-bottom: 1px solid #eee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.holdings-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
-    text-transform: uppercase;
-    font-size: 0.8em;
-    letter-spacing: 0.5px;
-}
-
-.holdings-table td.symbol {
+/* Set specific column widths */
+.holdings-table th:nth-child(1), /* Symbol */
+.holdings-table td:nth-child(1) {
+    width: 15%;
     text-align: left;
-    font-weight: bold;
-    color: #2c3e50;
 }
 
-.holdings-table td.shares {
-    color: #666;
+.holdings-table th:nth-child(2), /* Shares */
+.holdings-table td:nth-child(2) {
+    width: 10%;
 }
 
-.holdings-table td.pl {
-    font-weight: bold;
+.holdings-table th:nth-child(3), /* Buy Price */
+.holdings-table td:nth-child(3),
+.holdings-table th:nth-child(4), /* Current */
+.holdings-table td:nth-child(4) {
+    width: 15%;
 }
 
-.holdings-table td.pl.positive {
-    color: #28a745;
+.holdings-table th:nth-child(5), /* Value */
+.holdings-table td:nth-child(5) {
+    width: 15%;
 }
 
-.holdings-table td.pl.negative {
-    color: #dc3545;
+.holdings-table th:nth-child(6), /* P/L ($) */
+.holdings-table td:nth-child(6),
+.holdings-table th:nth-child(7), /* P/L (%) */
+.holdings-table td:nth-child(7) {
+    width: 15%;
 }
 
-.holdings-table .pl-percent {
-    font-size: 0.9em;
-    opacity: 0.8;
+/* Make the table header text smaller and wrap if needed */
+.holdings-table th {
+    font-size: 0.85em;
+    white-space: normal;
+    line-height: 1.2;
 }
 
 .summary-header {
@@ -546,4 +552,36 @@ footer {
 @keyframes rotate {
     from { transform: translateY(-50%) rotate(0deg); }
     to { transform: translateY(-50%) rotate(360deg); }
-} 
+}
+
+/* Update the data-section width for bot summary */
+.data-section {
+    background-color: #f8f8ff;
+    border: 1px solid #d3d3d3;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-height: 300px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Add specific width for bot summary section */
+#bot-summary {
+    min-width: 800px; /* Set minimum width */
+    flex-grow: 1; /* Allow it to grow */
+}
+
+/* Update main grid to accommodate wider bot summary */
+main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+@media (min-width: 1200px) {
+    main {
+        grid-template-columns: 1fr 1fr 2fr; /* Make the last column (bot summary) twice as wide */
+    }
+}
