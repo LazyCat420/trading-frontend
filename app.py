@@ -22,26 +22,39 @@ def get_stock_prices(symbols):
     prices = {}
     if symbols:
         try:
-            # Fetch all prices in one batch
             tickers = yf.Tickers(' '.join(symbols))
             for symbol in symbols:
                 try:
                     ticker = tickers.tickers[symbol]
-                    info = ticker.fast_info  # Use fast_info instead of info for better performance
+                    info = ticker.fast_info
                     
-                    current_price = info.last_price if hasattr(info, 'last_price') else info.get('regularMarketPrice', 0)
-                    previous_close = info.previous_close if hasattr(info, 'previous_close') else info.get('previousClose', 0)
+                    # Get price data with fallback logic
+                    current_price = getattr(info, 'last_price', None)
+                    previous_close = getattr(info, 'previous_close', None)
                     
-                    # If current price is not available, use previous close
-                    price = current_price if current_price and current_price > 0 else previous_close
+                    # Determine if market is closed (price is 0 or None)
+                    is_market_closed = current_price is None or current_price == 0
+                    
+                    # Use previous close if market is closed or current price is invalid
+                    price = previous_close if is_market_closed else current_price
+                    
+                    # Calculate change only if market is open
+                    if not is_market_closed and previous_close:
+                        change = current_price - previous_close
+                        change_percent = (change / previous_close) * 100
+                    else:
+                        change = 0
+                        change_percent = 0
                     
                     prices[symbol] = {
-                        'price': price,
-                        'change': 0,  # Set to 0 when market is closed
-                        'changePercent': 0,  # Set to 0 when market is closed
-                        'previousClose': previous_close,
-                        'isMarketClosed': True
+                        'price': price if price is not None else 0,
+                        'change': change,
+                        'changePercent': change_percent,
+                        'previousClose': previous_close if previous_close is not None else 0,
+                        'isMarketClosed': is_market_closed
                     }
+                    
+                    print(f"Fetched {symbol}: Price={price}, PrevClose={previous_close}, Market Closed={is_market_closed}")
                     
                 except Exception as e:
                     print(f"Error fetching {symbol}: {str(e)}")
@@ -59,76 +72,25 @@ def get_stock_prices(symbols):
 @app.route('/watchlist')
 def get_watchlist():
     try:
-        # First, get the watchlist data from MongoDB
         watchlist_data = list(db.watchlist.find({}, {'_id': 0}))
         
         if watchlist_data and 'sector_watchlists' in watchlist_data[0]:
             sectors = watchlist_data[0]['sector_watchlists']
-            
-            # Extract all symbols from the MongoDB data while maintaining sector organization
             all_symbols = []
+            
+            # Get all unique symbols while preserving order
             for sector, stocks in sectors.items():
-                # Ensure stocks is a list and contains valid symbols
                 if isinstance(stocks, list):
-                    # Add each stock symbol to our list if it's not already there
                     all_symbols.extend([stock for stock in stocks if stock and isinstance(stock, str)])
             
             # Remove duplicates while preserving order
             all_symbols = list(dict.fromkeys(all_symbols))
             
-            if all_symbols:  # Only proceed if we have symbols to look up
-                try:
-                    print(f"Fetching prices for symbols: {all_symbols}")  # Debug log
-                    # Create a single Tickers object for all symbols
-                    tickers = yf.Tickers(' '.join(all_symbols))
-                    prices = {}
-                    
-                    for symbol in all_symbols:
-                        try:
-                            ticker = tickers.tickers[symbol]
-                            info = ticker.info
-                            
-                            # Get the price data
-                            current_price = info.get('regularMarketPrice')
-                            previous_close = info.get('previousClose')
-                            
-                            if current_price is not None and previous_close is not None:
-                                change = current_price - previous_close
-                                change_percent = (change / previous_close) * 100
-                            else:
-                                change = info.get('regularMarketChange', 0)
-                                change_percent = info.get('regularMarketChangePercent', 0)
-                            
-                            prices[symbol] = {
-                                'price': current_price if current_price is not None else 0,
-                                'change': change if change is not None else 0,
-                                'changePercent': change_percent if change_percent is not None else 0,
-                                'previousClose': previous_close if previous_close is not None else 0
-                            }
-                            print(f"Successfully fetched price for {symbol}: {prices[symbol]}")  # Debug log
-                            
-                        except Exception as e:
-                            print(f"Error fetching data for {symbol}: {str(e)}")
-                            prices[symbol] = {
-                                'price': 0,
-                                'change': 0,
-                                'changePercent': 0,
-                                'previousClose': 0
-                            }
-                    
-                    # Add the prices to the watchlist data
-                    watchlist_data[0]['prices'] = prices
-                    
-                except Exception as e:
-                    print(f"Error in batch price fetch: {str(e)}")
-                    # Provide empty prices if batch fetch fails
-                    watchlist_data[0]['prices'] = {symbol: {
-                        'price': 0,
-                        'change': 0,
-                        'changePercent': 0,
-                        'previousClose': 0
-                    } for symbol in all_symbols}
-            
+            if all_symbols:
+                print(f"Fetching prices for {len(all_symbols)} symbols...")
+                prices = get_stock_prices(all_symbols)
+                watchlist_data[0]['prices'] = prices
+        
         return jsonify(watchlist=watchlist_data)
     except Exception as e:
         print(f"Error in watchlist: {str(e)}")

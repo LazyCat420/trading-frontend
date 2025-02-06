@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const sectorWatchlists = data.watchlist[0].sector_watchlists;
                         const prices = data.watchlist[0].prices || {};
                         
-                        // Sort sectors alphabetically
                         const sortedSectors = Object.entries(sectorWatchlists).sort(([a], [b]) => a.localeCompare(b));
                         
                         sortedSectors.forEach(([sector, stocks]) => {
@@ -25,21 +24,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="sector-stocks">
                                     ${stocks.map(symbol => {
                                         const stockPrice = prices[symbol] || {};
-                                        const price = stockPrice.price ? stockPrice.price.toFixed(2) : 'N/A';
-                                        const change = stockPrice.changePercent ? stockPrice.changePercent.toFixed(2) : '0.00';
-                                        const isPositive = stockPrice.change >= 0;
+                                        const price = stockPrice.price || stockPrice.previousClose || 0;
+                                        const displayPrice = price.toFixed(2);
+                                        const change = stockPrice.changePercent || 0;
+                                        const displayChange = change.toFixed(2);
+                                        const isPositive = change >= 0;
                                         const isMarketClosed = stockPrice.isMarketClosed;
                                         
                                         return `
                                             <div class="stock-item">
                                                 <span class="symbol">${symbol}</span>
-                                                <div class="price flip-board ${isPositive ? 'positive' : 'negative'}">
-                                                    ${price.split('').map(digit => 
+                                                <div class="price flip-board">
+                                                    ${displayPrice.split('').map(digit => 
                                                         `<span class="digit">${digit}</span>`
                                                     ).join('')}
                                                 </div>
                                                 <div class="change flip-board ${isPositive ? 'positive' : 'negative'}">
-                                                    ${(isPositive ? '+' : '') + change + '%'}
+                                                    ${(isPositive ? '+' : '') + displayChange + '%'}
                                                 </div>
                                                 ${isMarketClosed ? '<span class="market-status">Market Closed</span>' : ''}
                                             </div>
