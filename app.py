@@ -3,6 +3,7 @@ from flask_cors import CORS  # Import CORS
 from pymongo import MongoClient
 import yfinance as yf
 import os
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes - this is important for local development
@@ -17,56 +18,74 @@ if not mongo_uri:
 client = MongoClient(mongo_uri)
 db = client['trading']  # Database name is 'trading' as per your rules
 
+# Cache for stock prices
+price_cache = {}
+CACHE_DURATION = timedelta(minutes=5)  # Cache data for 5 minutes
+
 def get_stock_prices(symbols):
-    """Helper function to get real-time prices for multiple symbols"""
+    """Helper function to get real-time prices for multiple symbols with caching"""
     prices = {}
+    symbols_to_fetch = []
+    current_time = datetime.now()
+    
     if symbols:
-        try:
-            tickers = yf.Tickers(' '.join(symbols))
-            for symbol in symbols:
-                try:
-                    ticker = tickers.tickers[symbol]
-                    info = ticker.fast_info
-                    
-                    # Get price data with fallback logic
-                    current_price = getattr(info, 'last_price', None)
-                    previous_close = getattr(info, 'previous_close', None)
-                    
-                    # Determine if market is closed (price is 0 or None)
-                    is_market_closed = current_price is None or current_price == 0
-                    
-                    # Use previous close if market is closed or current price is invalid
-                    price = previous_close if is_market_closed else current_price
-                    
-                    # Calculate change only if market is open
-                    if not is_market_closed and previous_close:
-                        change = current_price - previous_close
-                        change_percent = (change / previous_close) * 100
-                    else:
-                        change = 0
-                        change_percent = 0
-                    
-                    prices[symbol] = {
-                        'price': price if price is not None else 0,
-                        'change': change,
-                        'changePercent': change_percent,
-                        'previousClose': previous_close if previous_close is not None else 0,
-                        'isMarketClosed': is_market_closed
-                    }
-                    
-                    print(f"Fetched {symbol}: Price={price}, PrevClose={previous_close}, Market Closed={is_market_closed}")
-                    
-                except Exception as e:
-                    print(f"Error fetching {symbol}: {str(e)}")
-                    prices[symbol] = {
-                        'price': 0,
-                        'change': 0,
-                        'changePercent': 0,
-                        'previousClose': 0,
-                        'isMarketClosed': True
-                    }
-        except Exception as e:
-            print(f"Error in batch price fetch: {str(e)}")
+        # First check cache for valid entries
+        for symbol in symbols:
+            if symbol == 'cash':
+                continue
+            if symbol in price_cache:
+                cached_data = price_cache[symbol]
+                if current_time - cached_data['timestamp'] < CACHE_DURATION:
+                    prices[symbol] = cached_data['data']
+                    print(f"Using cached data for {symbol}")
+                else:
+                    symbols_to_fetch.append(symbol)
+            else:
+                symbols_to_fetch.append(symbol)
+        
+        # Only fetch new data for symbols not in cache
+        if symbols_to_fetch:
+            try:
+                print(f"Fetching fresh data for: {symbols_to_fetch}")
+                tickers = yf.Tickers(' '.join(symbols_to_fetch))
+                for symbol in symbols_to_fetch:
+                    try:
+                        ticker = tickers.tickers[symbol]
+                        info = ticker.fast_info
+                        
+                        current_price = getattr(info, 'last_price', None)
+                        previous_close = getattr(info, 'previous_close', None)
+                        
+                        is_market_closed = current_price is None or current_price == 0
+                        price = previous_close if is_market_closed else current_price
+                        
+                        price_data = {
+                            'price': price if price is not None else 0,
+                            'change': 0,
+                            'changePercent': 0,
+                            'previousClose': previous_close if previous_close is not None else 0,
+                            'isMarketClosed': is_market_closed
+                        }
+                        
+                        # Cache the new data
+                        price_cache[symbol] = {
+                            'timestamp': current_time,
+                            'data': price_data
+                        }
+                        prices[symbol] = price_data
+                        
+                    except Exception as e:
+                        print(f"Error fetching {symbol}: {str(e)}")
+                        prices[symbol] = {
+                            'price': 0,
+                            'change': 0,
+                            'changePercent': 0,
+                            'previousClose': 0,
+                            'isMarketClosed': True
+                        }
+            except Exception as e:
+                print(f"Error in batch price fetch: {str(e)}")
+    
     return prices
 
 @app.route('/watchlist')
@@ -118,34 +137,38 @@ def get_summary():
     try:
         summary_data = db.summary.find_one({}, {'_id': 0})
         if summary_data:
-            # Get current holdings from summary
+            # Get current holdings from portfolio
             portfolio = summary_data.get('portfolio', {})
+            
+            # Get cash balance from the root level 'balance' field
+            cash_balance = float(summary_data.get('balance', 0))  # Get balance from root level
+            print(f"Initial cash balance: ${cash_balance:.2f}")
             
             # Get purchase prices from trades collection
             purchase_prices = {}
-            for symbol in portfolio.keys():
-                # Get the latest BUY trade for each symbol
+            holdings_with_value = {}
+            total_value = cash_balance  # Start with cash
+            total_cost_basis = cash_balance  # Include initial cash in cost basis
+            
+            # Process each holding
+            for symbol, shares in portfolio.items():
+                if symbol == 'cash':
+                    continue
+                
+                # Get the purchase price from the last BUY trade
                 last_buy = db.trades.find_one(
                     {'ticker': symbol, 'action': 'BUY'},
                     {'price': 1},
-                    sort=[('timestamp', -1)]  # Get most recent
+                    sort=[('timestamp', -1)]
                 )
-                if last_buy:
-                    purchase_prices[symbol] = last_buy['price']
-            
-            # Get real-time prices for holdings
-            prices = get_stock_prices(portfolio.keys())
-            
-            # Calculate current portfolio value and details
-            total_value = 0
-            total_cost_basis = 0
-            holdings_with_value = {}
-            
-            for symbol, shares in portfolio.items():
-                current_price = prices.get(symbol, {}).get('price', 0)
-                purchase_price = purchase_prices.get(symbol, 0)
+                purchase_price = last_buy['price'] if last_buy else 0
+                
+                # Get current price
+                current_price_data = get_stock_prices([symbol])
+                current_price = current_price_data.get(symbol, {}).get('price', 0)
                 
                 # Calculate values
+                shares = float(shares)
                 current_value = current_price * shares
                 cost_basis = purchase_price * shares
                 unrealized_pl = current_value - cost_basis
@@ -161,21 +184,24 @@ def get_summary():
                     'current_value': current_value,
                     'cost_basis': cost_basis,
                     'unrealized_pl': unrealized_pl,
-                    'pl_percentage': pl_percentage,
-                    'change': prices.get(symbol, {}).get('change', 0),
-                    'changePercent': prices.get(symbol, {}).get('changePercent', 0)
+                    'pl_percentage': pl_percentage
                 }
             
-            # Update summary with real-time data
+            # Update summary with calculated values
             summary_data['portfolio_details'] = holdings_with_value
             summary_data['total_portfolio_value'] = total_value
+            summary_data['cash_balance'] = cash_balance
             summary_data['total_cost_basis'] = total_cost_basis
             summary_data['total_unrealized_pl'] = total_value - total_cost_basis
             summary_data['total_pl_percentage'] = ((total_value - total_cost_basis) / total_cost_basis * 100) if total_cost_basis > 0 else 0
             
+            # Debug prints
+            print(f"Total Portfolio Value: ${total_value:.2f}")
+            print(f"Total Cost Basis: ${total_cost_basis:.2f}")
+            print(f"Cash Balance: ${cash_balance:.2f}")
+            print(f"Total P/L: ${summary_data['total_unrealized_pl']:.2f}")
+            
             return jsonify(summary=summary_data)
-        else:
-            return jsonify(error="Summary data not found"), 404
     except Exception as e:
         print(f"Error in summary: {str(e)}")
         return jsonify({'error': 'Failed to fetch summary data'}), 500

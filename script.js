@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (url.includes('summary')) {
                         const summary = data.summary;
                         const portfolioDetails = summary.portfolio_details || {};
+                        const cashBalance = summary.cash_balance || 0;
                         
                         const portfolioDiv = document.createElement('div');
                         portfolioDiv.className = 'portfolio-summary';
@@ -90,6 +91,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="flip-board ${summary.total_unrealized_pl >= 0 ? 'positive' : 'negative'}">
                                         ${summary.total_unrealized_pl >= 0 ? '+' : ''}$${summary.total_unrealized_pl.toFixed(2)}
                                         (${summary.total_pl_percentage.toFixed(2)}%)
+                                    </div>
+                                </div>
+                                <div class="summary-cash">
+                                    <h3>Cash Balance</h3>
+                                    <div class="flip-board">
+                                        $${cashBalance.toFixed(2)}
                                     </div>
                                 </div>
                             </div>
@@ -121,6 +128,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 </td>
                                             </tr>
                                         `).join('')}
+                                        <tr class="cash-row">
+                                            <td class="symbol">Cash</td>
+                                            <td colspan="3"></td>
+                                            <td class="value">$${cashBalance.toFixed(2)}</td>
+                                            <td></td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -160,15 +173,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initial data fetch
+    // Initial data fetch only
     fetchData('http://localhost:5000/watchlist', 'watchlist-display', 'watchlist', 'list');
     fetchData('http://localhost:5000/trades', 'trades-display', 'trades', 'list');
     fetchData('http://localhost:5000/summary', 'summary-display', 'summary', 'flip-board');
 
-    // Refresh data every 30 seconds
-    setInterval(() => {
+    // Add refresh button to header
+    const header = document.querySelector('header');
+    const refreshButton = document.createElement('button');
+    refreshButton.className = 'refresh-button';
+    refreshButton.innerHTML = '↻ Refresh';
+    refreshButton.onclick = () => {
+        refreshButton.classList.add('rotating');
         fetchData('http://localhost:5000/watchlist', 'watchlist-display', 'watchlist', 'list');
         fetchData('http://localhost:5000/trades', 'trades-display', 'trades', 'list');
         fetchData('http://localhost:5000/summary', 'summary-display', 'summary', 'flip-board');
-    }, 30000);
+        
+        // Remove rotation after 1 second
+        setTimeout(() => {
+            refreshButton.classList.remove('rotating');
+        }, 1000);
+    };
+    header.appendChild(refreshButton);
 }); 
